@@ -1,9 +1,19 @@
 import { CartEntity } from 'src/cart/entities/cart.entity';
 import { OrderEntity } from 'src/order/entities/order.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity('users')
 export class UserEntity {
+  constructor(partialEntity: Partial<UserEntity>) {
+    Object.assign(this, partialEntity);
+  }
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -16,13 +26,12 @@ export class UserEntity {
   @Column({ type: 'varchar' })
   password: string;
 
-  @OneToMany(() => CartEntity, (cart) => cart.user, {
-    cascade: true,
-  })
+  @OneToMany(() => CartEntity, (cart) => cart.user)
   carts: CartEntity[];
 
-  @OneToMany(() => OrderEntity, (order) => order.user, {
-    cascade: true,
-  })
+  @OneToMany(() => OrderEntity, (order) => order.user)
   orders: CartEntity[];
+
+  @CreateDateColumn()
+  createdAt: Date;
 }

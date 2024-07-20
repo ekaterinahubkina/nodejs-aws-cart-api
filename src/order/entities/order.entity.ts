@@ -20,7 +20,6 @@ export class OrderEntity {
 
   @OneToOne(() => CartEntity, (cart) => cart.order, {
     nullable: false,
-    cascade: true,
   })
   @JoinColumn()
   cart: CartEntity;

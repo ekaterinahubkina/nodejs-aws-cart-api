@@ -1,11 +1,13 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-import * as dotenv from 'dotenv';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { CartEntity } from 'src/cart/entities/cart.entity';
 import { CartItemEntity } from 'src/cart/entities/cart-item.entity';
 import { OrderEntity } from 'src/order/entities/order.entity';
+import { ProductEntity } from 'src/cart/entities/product.entity';
+import { config } from 'dotenv';
 
-dotenv.config();
+config();
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -14,7 +16,14 @@ export const dataSourceOptions: DataSourceOptions = {
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DATABASE,
-  entities: [UserEntity, CartEntity, CartItemEntity, OrderEntity],
+  entities: [
+    UserEntity,
+    CartEntity,
+    CartItemEntity,
+    OrderEntity,
+    ProductEntity,
+  ],
+  namingStrategy: new SnakeNamingStrategy(),
   synchronize: true,
   migrationsRun: false,
   logging: true,

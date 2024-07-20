@@ -30,11 +30,10 @@ export class CartEntity {
   @OneToMany(() => CartItemEntity, (cartItem) => cartItem.cart, {
     cascade: true,
   })
-  cartItems: CartItemEntity[];
+  items: CartItemEntity[];
 
   @OneToOne(() => OrderEntity, (order) => order.cart, {
     nullable: false,
-    cascade: true,
   })
   order: OrderEntity;
 
