@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { CartEntity } from './cart.entity';
 import { ProductEntity } from './product.entity';
@@ -25,10 +26,9 @@ export class CartItemEntity {
   @ManyToOne(() => CartEntity, (cart) => cart.items, { nullable: false })
   cart: CartEntity;
 
-  @OneToOne(() => ProductEntity, (product) => product.cartItem, {
-    cascade: ['insert', 'remove'],
+  @ManyToOne(() => ProductEntity, (product) => product.cartItem, {
     nullable: false,
+    cascade: ['insert', 'update'],
   })
-  @JoinColumn()
   product: ProductEntity;
 }

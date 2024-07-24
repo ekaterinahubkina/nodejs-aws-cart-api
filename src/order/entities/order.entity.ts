@@ -12,6 +12,10 @@ import { CartEntity } from 'src/cart/entities/cart.entity';
 
 @Entity('orders')
 export class OrderEntity {
+  constructor(partialEntity: Partial<OrderEntity>) {
+    Object.assign(this, partialEntity);
+  }
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -24,7 +28,7 @@ export class OrderEntity {
   @JoinColumn()
   cart: CartEntity;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'json', nullable: true })
   payment: string;
 
   @Column({ type: 'json' })

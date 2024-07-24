@@ -15,6 +15,7 @@ export class CartService {
     @InjectRepository(CartItemEntity)
     private cartItemsResitory: Repository<CartItemEntity>,
   ) {}
+
   async findByUserId(userId: string): Promise<CartEntity> {
     return await this.cartRepository.findOne({
       where: { status: CartStatuses.OPEN, user: { id: userId } },
@@ -48,23 +49,33 @@ export class CartService {
   ): Promise<CartEntity> {
     const cart = await this.findOrCreateByUserId(userId);
 
-    if (newCartItem.count === 1) {
-      const newItem = new CartItemEntity(newCartItem);
-      const product = new ProductEntity(newCartItem.product);
-      newItem.product = product;
-      newItem.cart = cart;
-      await this.cartItemsResitory.save(newItem);
-    } else {
-      const itemToUpdate = await this.cartItemsResitory.findOne({
-        where: { product: { id: newCartItem.product.id } },
-      });
+    switch (newCartItem.count) {
+      case 1:
+        const newItem = new CartItemEntity(newCartItem);
+        const product = new ProductEntity(newCartItem.product);
+        newItem.product = product;
+        newItem.cart = cart;
+        await this.cartItemsResitory.save(newItem);
+        break;
 
-      await this.cartItemsResitory.update(
-        { id: itemToUpdate.id },
-        {
-          count: newCartItem.count,
-        },
-      );
+      case 0:
+        await this.cartItemsResitory.delete({
+          product: { id: newCartItem.product.id },
+        });
+        break;
+
+      default:
+        const itemToUpdate = await this.cartItemsResitory.findOne({
+          where: { product: { id: newCartItem.product.id } },
+        });
+
+        await this.cartItemsResitory.update(
+          { id: itemToUpdate.id },
+          {
+            count: newCartItem.count,
+          },
+        );
+        break;
     }
 
     return await this.cartRepository.findOne({
@@ -77,9 +88,11 @@ export class CartService {
     const userCart = await this.cartRepository.findOne({
       where: { status: CartStatuses.OPEN, user: { id: userId } },
     });
+
     if (!userCart) {
       throw new NotFoundException('User cart not found');
     }
+
     userCart.status = CartStatuses.ORDERED;
     await this.cartRepository.save(userCart);
   }

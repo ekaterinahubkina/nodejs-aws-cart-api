@@ -5,6 +5,7 @@ import {
   PrimaryColumn,
   PrimaryGeneratedColumn,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { CartEntity } from './cart.entity';
 import { CartItemEntity } from './cart-item.entity';
@@ -27,7 +28,7 @@ export class ProductEntity {
   @Column({ type: 'integer' })
   price: number;
 
-  @OneToOne(() => CartItemEntity, (cartItem) => cartItem.product, {
+  @OneToMany(() => CartItemEntity, (cartItem) => cartItem.product, {
     nullable: false,
   })
   cartItem: CartItemEntity;

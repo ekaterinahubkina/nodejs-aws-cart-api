@@ -15,6 +15,10 @@ import { OrderEntity } from 'src/order/entities/order.entity';
 
 @Entity('carts')
 export class CartEntity {
+  constructor(partialEntity: Partial<CartEntity>) {
+    Object.assign(this, partialEntity);
+  }
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

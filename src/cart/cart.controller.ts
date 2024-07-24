@@ -8,6 +8,7 @@ import {
   Post,
   UseGuards,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 
 // import { BasicAuthGuard, JwtAuthGuard } from '../auth';
@@ -18,6 +19,7 @@ import { calculateCartTotal } from './models-rules';
 import { CartService } from './services';
 import { BasicAuthGuard } from 'src/auth/guards';
 import { UpdateCartDto } from './dtos/updateCart.dto';
+import { CreateOrderDto } from 'src/order/dtos/create-order.dto';
 
 @Controller('api/profile/cart')
 export class CartController {
@@ -58,46 +60,34 @@ export class CartController {
   // @UseGuards(JwtAuthGuard)
   @UseGuards(BasicAuthGuard)
   @Delete()
-  clearUserCart(@Req() req: AppRequest) {
-    this.cartService.removeByUserId(getUserIdFromRequest(req));
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'OK',
-    };
+  async clearUserCart(@Req() req: AppRequest) {
+    return await this.cartService.removeByUserId(getUserIdFromRequest(req));
   }
 
   // @UseGuards(JwtAuthGuard)
-  // @UseGuards(BasicAuthGuard)
+  @UseGuards(BasicAuthGuard)
   @Post('checkout')
   async checkout(@Req() req: AppRequest, @Body() body) {
     const userId = getUserIdFromRequest(req);
     const cart = await this.cartService.findByUserId(userId);
 
     if (!(cart && cart.items.length)) {
-      const statusCode = HttpStatus.BAD_REQUEST;
-      req.statusCode = statusCode;
-
-      return {
-        statusCode,
-        message: 'Cart is empty',
-      };
+      throw new BadRequestException();
     }
 
     const { id: cartId, items } = cart;
     const total = calculateCartTotal(cart);
-    const order = this.orderService.create({
-      ...body, // TODO: validate and pick only necessary data
-      userId,
-      cartId,
-      items,
-      total,
-    });
-    this.cartService.removeByUserId(userId);
+    const order = await this.orderService.create(
+      new CreateOrderDto({
+        ...body,
+        userId,
+        cartId,
+        total,
+      }),
+    );
+    await this.cartService.removeByUserId(userId);
 
     return {
-      statusCode: HttpStatus.OK,
-      message: 'OK',
       data: { order },
     };
   }
