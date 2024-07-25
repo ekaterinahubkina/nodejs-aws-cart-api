@@ -61,12 +61,16 @@ export class CartService {
       case 0:
         await this.cartItemsResitory.delete({
           product: { id: newCartItem.product.id },
+          cart: { id: cart.id },
         });
         break;
 
       default:
         const itemToUpdate = await this.cartItemsResitory.findOne({
-          where: { product: { id: newCartItem.product.id } },
+          where: {
+            product: { id: newCartItem.product.id },
+            cart: { id: cart.id },
+          },
         });
 
         await this.cartItemsResitory.update(

@@ -35,15 +35,6 @@ export class CartServiceStackKate extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
     };
 
-    console.log(
-      'ENVIRONMENT:',
-      POSTGRES_HOST,
-      POSTGRES_PORT,
-      POSTGRES_USER,
-      POSTGRES_PASSWORD,
-      POSTGRES_DATABASE,
-    );
-
     const cartServiceHandler = new LambdaFunction(
       this,
       'CartServiceHandlerKate',
