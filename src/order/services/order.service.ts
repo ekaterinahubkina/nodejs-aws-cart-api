@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { OrderStatuses } from '../models';
 import { CreateOrderDto } from '../dtos/create-order.dto';
 import { OrderEntity } from '../entities/order.entity';
@@ -18,7 +18,7 @@ export class OrderService {
     return await this.orderRepository.findOneBy({ id: orderId });
   }
 
-  async create(data: CreateOrderDto) {
+  async create(queryRunner: QueryRunner, data: CreateOrderDto) {
     const { cartId, userId, total, address, comments, payment } = data;
 
     const order = new OrderEntity({ status: OrderStatuses.IN_PROGRESS });
@@ -30,7 +30,7 @@ export class OrderService {
     order.delivery = JSON.stringify(address);
     order.payment = JSON.stringify(payment);
 
-    return await this.orderRepository.save(order);
+    return await queryRunner.manager.getRepository(OrderEntity).save(order);
   }
 
   async update(orderId: string, data: Partial<CreateOrderDto>) {

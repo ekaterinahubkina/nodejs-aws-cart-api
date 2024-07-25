@@ -20,10 +20,13 @@ import { CartService } from './services';
 import { BasicAuthGuard } from 'src/auth/guards';
 import { UpdateCartDto } from './dtos/updateCart.dto';
 import { CreateOrderDto } from 'src/order/dtos/create-order.dto';
+import { DataSource } from 'typeorm';
+import { CartStatuses } from './models';
 
 @Controller('api/profile/cart')
 export class CartController {
   constructor(
+    private dataSource: DataSource,
     private cartService: CartService,
     private orderService: OrderService,
   ) {}
@@ -77,7 +80,13 @@ export class CartController {
 
     const { id: cartId, items } = cart;
     const total = calculateCartTotal(cart);
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     const order = await this.orderService.create(
+      queryRunner,
       new CreateOrderDto({
         ...body,
         userId,
@@ -85,7 +94,11 @@ export class CartController {
         total,
       }),
     );
-    await this.cartService.removeByUserId(userId);
+    await this.cartService.updateUserCartStatus(
+      queryRunner,
+      userId,
+      CartStatuses.ORDERED,
+    );
 
     return {
       data: { order },

@@ -8,16 +8,41 @@ import {
   FunctionProps,
 } from 'aws-cdk-lib/aws-lambda';
 import * as path from 'path';
+import { config } from 'dotenv';
+
+config();
 
 export class CartServiceStackKate extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const POSTGRES_HOST = process.env.POSTGRES_HOST ?? '';
+    const POSTGRES_PORT = process.env.POSTGRES_PORT ?? '';
+    const POSTGRES_USER = process.env.POSTGRES_USER ?? '';
+    const POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD ?? '';
+    const POSTGRES_DATABASE = process.env.POSTGRES_DATABASE ?? '';
+
     const lambdaFunctionProps: Omit<FunctionProps, 'handler'> = {
       runtime: Runtime.NODEJS_20_X,
       code: Code.fromAsset(path.join(__dirname + '/../../dist')),
-      environment: {},
+      environment: {
+        POSTGRES_HOST,
+        POSTGRES_PORT,
+        POSTGRES_USER,
+        POSTGRES_PASSWORD,
+        POSTGRES_DATABASE,
+      },
+      timeout: cdk.Duration.seconds(10),
     };
+
+    console.log(
+      'ENVIRONMENT:',
+      POSTGRES_HOST,
+      POSTGRES_PORT,
+      POSTGRES_USER,
+      POSTGRES_PASSWORD,
+      POSTGRES_DATABASE,
+    );
 
     const cartServiceHandler = new LambdaFunction(
       this,
@@ -36,8 +61,12 @@ export class CartServiceStackKate extends cdk.Stack {
       },
     });
 
-    const apiResource = api.root.addProxy({
+    api.root.addProxy({
       defaultIntegration: new LambdaIntegration(cartServiceHandler),
+    });
+
+    new cdk.CfnOutput(this, 'CartServiceKateUrl', {
+      value: api.url,
     });
   }
 }

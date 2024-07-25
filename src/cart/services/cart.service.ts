@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CartStatuses } from '../models';
@@ -84,7 +84,7 @@ export class CartService {
     });
   }
 
-  async removeByUserId(userId: string): Promise<void> {
+  async removeByUserId(userId: string) {
     const userCart = await this.cartRepository.findOne({
       where: { status: CartStatuses.OPEN, user: { id: userId } },
     });
@@ -93,7 +93,23 @@ export class CartService {
       throw new NotFoundException('User cart not found');
     }
 
-    userCart.status = CartStatuses.ORDERED;
-    await this.cartRepository.save(userCart);
+    return await this.cartRepository.remove(userCart);
+  }
+
+  async updateUserCartStatus(
+    queryRunner: QueryRunner,
+    userId: string,
+    status: CartStatuses,
+  ): Promise<void> {
+    const userCart = await this.cartRepository.findOne({
+      where: { status: CartStatuses.OPEN, user: { id: userId } },
+    });
+
+    if (!userCart) {
+      throw new NotFoundException('User cart not found');
+    }
+
+    userCart.status = status;
+    await queryRunner.manager.getRepository(CartEntity).save(userCart);
   }
 }

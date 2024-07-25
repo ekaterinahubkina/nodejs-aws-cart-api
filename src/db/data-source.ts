@@ -24,7 +24,7 @@ export const dataSourceOptions: DataSourceOptions = {
     ProductEntity,
   ],
   namingStrategy: new SnakeNamingStrategy(),
-  synchronize: true,
+  synchronize: false,
   migrationsRun: false,
   logging: true,
   ssl: {
