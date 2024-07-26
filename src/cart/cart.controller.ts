@@ -22,6 +22,7 @@ import { UpdateCartDto } from './dtos/updateCart.dto';
 import { CreateOrderDto } from 'src/order/dtos/create-order.dto';
 import { DataSource } from 'typeorm';
 import { CartStatuses } from './models';
+import { OrderEntity } from 'src/order/entities/order.entity';
 
 @Controller('api/profile/cart')
 export class CartController {
@@ -85,20 +86,29 @@ export class CartController {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const order = await this.orderService.create(
-      queryRunner,
-      new CreateOrderDto({
-        ...body,
+    let order: OrderEntity;
+
+    try {
+      order = await this.orderService.create(
+        queryRunner,
+        new CreateOrderDto({
+          ...body,
+          userId,
+          cartId,
+          total,
+        }),
+      );
+      await this.cartService.updateUserCartStatus(
+        queryRunner,
         userId,
-        cartId,
-        total,
-      }),
-    );
-    await this.cartService.updateUserCartStatus(
-      queryRunner,
-      userId,
-      CartStatuses.ORDERED,
-    );
+        CartStatuses.ORDERED,
+      );
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
 
     return {
       data: { order },
