@@ -17,8 +17,8 @@ INSERT INTO public.cart_items(
 	('fc59b626-e9e5-4af4-8c67-bc9d179e0b5a', 2, default, 'd41e920f-a53a-4307-ae14-6ea4c0bf2e5e');
 	
 INSERT INTO public.users(
-	id, name, email, password, created_at, id)
-	VALUES
+	id, name, email, password, created_at)
+	VALUES 
 	(default, 'John Doe', 'john-doe@gmail.com', '12345', default),
 	(default, 'Jane Doe', 'jane-doe@gmail.com', '12345', default);
 	
