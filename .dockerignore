@@ -1,0 +1,15 @@
+#not needed in docker build
+.dockerignore
+cdk
+fill-db
+test
+.env*
+.eslintrc.js
+.gitignore
+.prettierrc
+Dockerfile
+nest-cli.json
+README.md
+#will be created by docker build
+node_modules
+dist
